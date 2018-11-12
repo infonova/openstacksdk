@@ -264,11 +264,21 @@ class CloudRegion(object):
 
     def get_api_version(self, service_type):
         version = self._get_config('api_version', service_type)
+
         if version:
+            if type(version) is dict:
+                self.log.warn(
+                    "Configured API_VERSION is dict. This is probably because"
+                    " get_api_version function was called by an old/deprecated"
+                    " client (like neutronclient).")
+                version_to_check = version[service_type]
+            else:
+                version_to_check = version
+
             try:
-                float(version)
+                float(version_to_check)
             except ValueError:
-                if 'latest' in version:
+                if 'latest' in version_to_check:
                     warnings.warn(
                         "You have a configured API_VERSION with 'latest' in"
                         " it. In the context of openstacksdk this doesn't make"
