@@ -482,8 +482,14 @@ def get_hostvars_from_server(cloud, server, mounts=None):
     """
     server_vars = add_server_interfaces(cloud, server)
 
-    flavor_id = server['flavor']['id']
-    flavor_name = cloud.get_flavor_name(flavor_id)
+    if 'id' in server['flavor']:
+        flavor_id = server['flavor']['id']
+        flavor_name = cloud.get_flavor_name(flavor_id)
+    else:
+        # when using compute api version >= 2.60 no 'id' in server['flavor']
+        flavor_name = server['flavor']['original_name']
+        server_vars['flavor']['id'] = cloud.compute.find_flavor(flavor_name)['id']
+    
     if flavor_name:
         server_vars['flavor']['name'] = flavor_name
 
