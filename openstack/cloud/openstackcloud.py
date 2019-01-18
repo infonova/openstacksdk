@@ -5387,6 +5387,9 @@ class _OpenStackCloudMixin(_normalize.Normalizer):
                         "Error in detaching volume %s" % volume['id']
                     )
 
+    def volume_can_multiattach(self, volume):
+        return volume['can_multiattach']
+
     def attach_volume(self, server, volume, device=None,
                       wait=True, timeout=None):
         """Attach a volume to a server.
@@ -5418,7 +5421,7 @@ class _OpenStackCloudMixin(_normalize.Normalizer):
                 % (volume['id'], server['id'], dev)
             )
 
-        if volume['status'] != 'available':
+        if not self.volume_can_multiattach(volume) and volume['status'] != 'available':
             raise exc.OpenStackCloudException(
                 "Volume %s is not available. Status is '%s'"
                 % (volume['id'], volume['status'])
